@@ -1,0 +1,127 @@
+#!/bin/sh
+###############################################################
+#         GDVD, 0.8 - Greg's automatic DVD encoder            #
+#         ========================================            #
+#                                                             #
+# This script was designed on Debian 5.0 but should work on   #
+# other distros without much work.                            #
+#                                                             #
+# In order to run this script;                                #
+# apt-get install the following                               #
+# HandBrakeCLI - for the encoding                             #
+# hal - to automatically run the program on DVD insert        #
+# lsdvd - to retrieve the title of the DVD                    #
+#                                                             #
+# Then change the settings in this file to suit;              #
+#                                                             #
+# Then place these files in the following locations;          #
+# /usr/share/hal/fdi/information/20thirdparty/dvdinsert.fdi   #
+# /usr/lib/hal/pgmrun                                         #
+# /usr/lib/hal/dvdinsert                                      #
+#                                                             #
+# Then chmod to 600 and allow them to be excuted, then        #
+# restart hal with "/etc/init.d/hal restart"                  #
+# and throw in a CD :) enjoy!                                 #
+#                                                             #
+# Any questions, comments, or suggestions please contact me   #
+# via my we site, www.Gregology.net                           #
+#                                              Gregory Clarke #
+###############################################################
+
+
+# Settings
+# ========
+inputdir="/media/cdrom0"
+tmpdir="/tmp/dvdrips"
+outputdir="/home/share/ripped"
+encoder="xvid"
+settings=""
+filetype="m4v"
+chmod="777"
+log="/home/share/ripped/log.txt"
+
+# Script info
+# ===========
+script_name="GDVD"
+script_version="0.8"
+script_slogan="Greg's automatic DVD encoder"
+script_author="Gregory Clarke"
+
+echo "$(date -u): script started" >> $log
+
+mount /dev/cdrom
+
+echo "$(date -u): DVD mounted" >> $log
+
+echo "$(date -u): searching title..." >> $log
+
+title=$(lsdvd -v | grep 'Disc Title:' | cut -d, -f1,2)
+title=${title#"Disc Title: "}
+
+echo "$(date -u) Disc Title: $title" >> $log
+
+echo "$(date -u) creating temp folder..." >> $log
+
+mkdir $tmpdir
+cpdir="$tmpdir/$title"
+mkdir "$cpdir"
+
+echo "$(date -u) checking temp folder exists" >> $log
+
+if [ -d $cpdir ]; then
+	echo "$(date -u) temp folder exists $cpdir" >> $log
+
+else 
+	echo "$(date -u) error in naming, resolving..." >> $log
+
+	echo "$(date -u) creating numbered temp folder..." >> $log
+
+	# uses time as title if there is an issue getting dvd title info
+	title=$(date +"%s")
+
+	mkdir $tmpdir
+	cpdir="$tmpdir/$title"
+	mkdir "$cpdir"
+
+	echo "$(date -u) temp folder exists $cpdir" >> $log
+fi
+
+echo "$(date -u) creating file name..." >> $log
+
+filename="$title.$filetype"
+echo "$(date -u) File name: $filename" >> $log
+
+echo "$(date -u) starting copy from $inputdir to $cpdir" >> $log
+cp -r $inputdir/* $cpdir
+
+echo "$(date -u) copying complete" >> $log
+
+echo "$(date -u) unmounting dvd" >> $log
+
+umount $inputdir >> $log
+
+echo "$(date -u) unmounting complete, waiting 30 seconds" >> $log
+
+sleep 30
+
+echo "$(date -u) ejecting disc" >> $log
+
+eject >> $log
+
+echo "$(date -u) disc ejected" >> $log
+echo "$(date -u) starting encoding" >> $log
+echo "$(date -u) running 'HandBrakeCLI --encoder $encoder $settings --input $cpdir --output $outputdir/$filename'" >> $log
+
+HandBrakeCLI --encoder $encoder $settings --input $cpdir --output $outputdir/$filename
+
+
+echo "$(date -u) encoding complete, $outputdir/$filename created" >> $log
+
+echo "$(date -u): chmoding $filename $chmod..." >> $log
+chmod $chmod $outputdir/$filename
+echo "$(date -u): chmoding complete" >> $log
+
+echo "$(date -u): removing temp folder..." >> $log
+rm -R $cpdir
+echo "$(date -u): temp folder removed" >> $log
+echo "$(date -u): $title complete!" >> $log

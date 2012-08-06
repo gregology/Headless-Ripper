@@ -1,0 +1,13 @@
+#!/bin/sh
+	echo $HALD_ACTION >> /home/share/ripped/log.txt
+	case $HALD_ACTION in
+	  add)
+	    sleep 1  # May be unnecessary, experiment
+	    echo  dvdinsert DVD inserted >> /home/share/ripped/log.txt
+	    /bin/rip "$HAL_PROP_VOLUME_LABEL" &amp;
+	    sleep 1
+	    ;;
+	  remove)
+	    echo DVD removed >> /home/share/ripped/log.txt
+	    ;;
+	esac

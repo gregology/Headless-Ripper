@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<deviceinfo version="0.2">
+	<device>
+		<match key="block.device" string="/dev/scd0">
+			<append key="info.callouts.add" type="strlist">/usr/libexec/pgmrun</append>
+		</match>
+	</device>
+</deviceinfo>

@@ -1,0 +1,12 @@
+#!/bin/sh
+	case $HALD_ACTION in
+	  add)
+	    sleep 1
+	    echo "$(date -u): DVD inserted" >> /home/share/ripped/log.txt
+	    dvdinsert "$HAL_PROP_VOLUME_LABEL" &amp;
+	    sleep 1
+	    ;;
+	  remove)
+	    echo "$(date -u): DVD removed" >> /home/share/ripped/log.txt
+	    ;;
+	esac
